@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NextGenICT
 
-## Getting Started
+Modern coaching center platform built with Next.js:
+- Promotional ICT-focused landing page (EN/BN)
+- Student portal (profile + monthly ledger + payments)
+- Admin dashboard (billing operations + manual payment review)
+- Content CMS (draft/publish with role-based access)
 
-First, run the development server:
+## Tech Stack
+
+- Next.js 16 (App Router)
+- Prisma + SQLite
+- Custom JWT session auth
+- Stripe Checkout + Webhooks
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Configure environment:
+
+```bash
+cp .env.example .env
+```
+
+Required keys in `.env`:
+
+```env
+DATABASE_URL="file:./dev.db"
+AUTH_SECRET="replace-with-a-long-random-secret"
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+```
+
+3. Sync database and seed:
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+4. Run development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Demo Accounts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Admin: `admin@nextgenict.local` / `Admin123!`
+- Content Editor: `editor@nextgenict.local` / `Editor123!`
+- Student: `student@nextgenict.local` / `Student123!`
 
-## Learn More
+## Main Routes
 
-To learn more about Next.js, take a look at the following resources:
+- Landing: `/`
+- Student login/signup: `/portal/login`, `/portal/signup`
+- Student dashboard: `/portal`
+- Student profile: `/portal/profile`
+- Forgot/reset password: `/portal/forgot-password`, `/portal/reset-password`
+- Admin login/dashboard: `/admin/login`, `/admin`
+- Content CMS: `/admin/content`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Routes (Core)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Auth
+  - `POST /api/auth/signup`
+  - `POST /api/auth/login`
+  - `POST /api/auth/logout`
+  - `POST /api/auth/forgot-password`
+  - `POST /api/auth/reset-password`
+- Student
+  - `GET /api/profile`
+  - `PUT /api/profile`
+  - `GET /api/portal/ledger`
+  - `POST /api/portal/manual-payment`
+- Payments
+  - `POST /api/stripe/checkout`
+  - `POST /api/stripe/webhook`
+  - `POST /api/admin/manual-payment`
+  - `POST /api/admin/manual-payment/review`
+  - `POST /api/admin/invoices/generate`
+- Content
+  - `GET /api/content?lang=en|bn`
+  - `GET /api/admin/content?locale=en|bn`
+  - `POST /api/admin/content` (`saveDraft` or `publish`)
 
-## Deploy on Vercel
+## Stripe Local Webhook
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+# nextgen-ict-app
