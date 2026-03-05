@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CONTENT_EDITOR
+  STUDENT
+}
+
+enum InvoiceStatus {
+  DUE
+  PAID
+  PENDING
+  OVERDUE
+  WAIVED
+}
+
+enum PaymentMethod {
+  STRIPE
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  fullName            String
+  phone               String?
+  guardianName        String?
+  guardianPhone       String?
+  program             String?
+  batch               String?
+  passwordHash        String
+  role                Role                 @default(STUDENT)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  invoices            Invoice[]
+  payments            Payment[]             @relation("StudentPayments")
+  reviewedPayments    Payment[]             @relation("ReviewedPayments")
+  revisions           ContentRevision[]    @relation("ContentRevisionAuthor")
+  passwordResetTokens PasswordResetToken[]
+  loginActivities     LoginActivity[]
+}
+
+model Invoice {
+  id              String       @id @default(cuid())
+  studentId       String
+  monthLabel      String
+  amount          Int
+  currency        String       @default("BDT")
+  status          InvoiceStatus @default(DUE)
+  dueDate         DateTime
+  stripeSessionId String?      @unique
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  student         User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  payments        Payment[]
+
+  @@unique([studentId, monthLabel])
+  @@index([studentId, status])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  invoiceId   String?
+  studentId   String
+  amount      Int
+  currency    String        @default("BDT")
+  method      PaymentMethod
+  status      PaymentStatus
+  providerRef String?       @unique
+  note        String?
+  receiptUrl  String?
+  paidAt      DateTime?
+  reviewedAt  DateTime?
+  reviewNote  String?
+  reviewedById String?
+  createdAt   DateTime      @default(now())
+  invoice     Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  student     User          @relation("StudentPayments", fields: [studentId], references: [id], onDelete: Cascade)
+  reviewedBy  User?         @relation("ReviewedPayments", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, createdAt])
+  @@index([invoiceId])
+  @@index([status, method, createdAt])
+}
+
+model ContentRevision {
+  id          String       @id @default(cuid())
+  locale      String
+  version     Int
+  status      ContentStatus
+  payload     Json
+  createdById String?
+  createdAt   DateTime     @default(now())
+  publishedAt DateTime?
+  createdBy   User?        @relation("ContentRevisionAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([locale, version])
+  @@index([locale, status, createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model LoginActivity {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String
+  role      Role?
+  success   Boolean
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, createdAt])
+  @@index([userId, createdAt])
+}
