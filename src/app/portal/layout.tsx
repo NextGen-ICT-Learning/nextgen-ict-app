@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, LayoutDashboard, ShieldUser, UserRound, Wallet } from "lucide-react";
+import { Bell, GraduationCap, LayoutDashboard, ShieldUser, UserRound, Wallet } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { LogoutButton } from "@/components/logout-button";
 
@@ -27,6 +27,9 @@ export default async function PortalLayout({
             </Link>
             <Link href="/portal/profile" className="inline-flex items-center gap-2 hover:text-primary">
               <UserRound size={16} /> Profile
+            </Link>
+            <Link href="/portal/classes" className="inline-flex items-center gap-2 hover:text-primary">
+              <GraduationCap size={16} /> Classes
             </Link>
             <a href="#payments" className="inline-flex items-center gap-2 hover:text-primary">
               <Wallet size={16} /> Payments

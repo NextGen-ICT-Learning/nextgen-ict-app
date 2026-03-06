@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import {
   PrismaClient,
+  ClassMediaType,
   InvoiceStatus,
   PaymentMethod,
   PaymentStatus,
@@ -14,6 +15,8 @@ function monthDate(year, monthIndex, day = 28) {
 }
 
 async function main() {
+  await prisma.classEnrollment.deleteMany();
+  await prisma.classContent.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.invoice.deleteMany();
   await prisma.contentRevision.deleteMany();
@@ -104,6 +107,27 @@ async function main() {
     },
   });
 
+  const sampleClass = await prisma.classContent.create({
+    data: {
+      title: "ICT Basics - Introduction to Networking",
+      description:
+        "Recorded class on basic networking concepts: IP, LAN, router workflow, and troubleshooting practice.",
+      classCode: "ICT-NET-2026",
+      mediaType: ClassMediaType.VIDEO,
+      mediaUrl: "https://res.cloudinary.com/demo/video/upload/v1312461204/dog.mp4",
+      mediaPublicId: "demo/dog",
+      mediaOriginalName: "networking-intro.mp4",
+      createdById: admin.id,
+    },
+  });
+
+  await prisma.classEnrollment.create({
+    data: {
+      classId: sampleClass.id,
+      studentId: student.id,
+    },
+  });
+
   await prisma.payment.create({
     data: {
       studentId: student.id,
@@ -122,6 +146,7 @@ async function main() {
   console.log(`Admin login: ${admin.email} / Admin123!`);
   console.log(`Editor login: ${editor.email} / Editor123!`);
   console.log(`Student login: ${student.email} / Student123!`);
+  console.log(`Sample class code: ${sampleClass.classCode}`);
 }
 
 main()

@@ -85,7 +85,20 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 3. Login as student and try `/admin`; confirm blocked/redirected.
 4. Login as content editor and verify access to `/admin/content` but not full admin billing actions.
 
-## 8) Credentials
+## 8) Class Upload + Join by Code (Cloudinary)
+
+1. Ensure `.env` has Cloudinary keys:
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+2. Login as admin and open `/admin/classes`.
+3. Upload a class with title, description, and image/video file.
+4. Confirm success message and generated class code appears.
+5. Login as student and open `/portal/classes`.
+6. Enter class code and click `Join Class`.
+7. Confirm joined class appears in list and media is viewable (video plays / image renders).
+
+## 9) Credentials
 
 - Admin: `admin@nextgenict.local` / `Admin123!`
 - Content Editor: `editor@nextgenict.local` / `Editor123!`

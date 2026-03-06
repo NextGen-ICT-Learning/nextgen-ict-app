@@ -30,6 +30,11 @@ export default async function AdminLayout({
             <Link href="/admin/content" className="hover:text-primary">
               Content CMS
             </Link>
+            {session?.role === "ADMIN" ? (
+              <Link href="/admin/classes" className="hover:text-primary">
+                Classes
+              </Link>
+            ) : null}
             <Link href="/portal" className="hover:text-primary">
               Student Portal
             </Link>

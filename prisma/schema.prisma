@@ -38,6 +38,11 @@ enum ContentStatus {
   ARCHIVED
 }
 
+enum ClassMediaType {
+  IMAGE
+  VIDEO
+}
+
 model User {
   id                  String               @id @default(cuid())
   email               String               @unique
@@ -57,6 +62,8 @@ model User {
   revisions           ContentRevision[]    @relation("ContentRevisionAuthor")
   passwordResetTokens PasswordResetToken[]
   loginActivities     LoginActivity[]
+  classesCreated      ClassContent[]       @relation("ClassCreator")
+  classEnrollments    ClassEnrollment[]
 }
 
 model Invoice {
@@ -142,4 +149,36 @@ model LoginActivity {
 
   @@index([email, createdAt])
   @@index([userId, createdAt])
+}
+
+model ClassContent {
+  id                  String            @id @default(cuid())
+  title               String
+  description         String
+  classCode           String            @unique
+  mediaType           ClassMediaType
+  mediaUrl            String
+  mediaPublicId       String
+  mediaOriginalName   String?
+  createdById         String
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  createdBy           User              @relation("ClassCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  enrollments         ClassEnrollment[]
+
+  @@index([classCode])
+  @@index([createdAt])
+}
+
+model ClassEnrollment {
+  id          String       @id @default(cuid())
+  classId     String
+  studentId   String
+  joinedAt    DateTime     @default(now())
+  class       ClassContent @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student     User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentId])
+  @@index([studentId, joinedAt])
+  @@index([classId, joinedAt])
 }
