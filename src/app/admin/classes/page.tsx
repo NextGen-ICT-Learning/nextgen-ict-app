@@ -1,4 +1,4 @@
-import { ClassMediaType } from "@prisma/client";
+import { ClassMediaType, LiveClassStatus } from "@prisma/client";
 import Link from "next/link";
 import { requireAdminSession } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
@@ -25,6 +25,15 @@ export default async function AdminClassesPage() {
           enrollments: true,
         },
       },
+      liveSessions: {
+        where: {
+          status: LiveClassStatus.LIVE,
+        },
+        orderBy: {
+          startedAt: "desc",
+        },
+        take: 1,
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -49,6 +58,11 @@ export default async function AdminClassesPage() {
                 <p className="mt-1 text-lg font-bold">{entry.classCode}</p>
 
                 <h2 className="mt-3 text-lg font-bold">{entry.title}</h2>
+                {entry.liveSessions.length > 0 ? (
+                  <p className="mt-2 inline-flex rounded-full bg-success/15 px-2 py-1 text-xs font-semibold text-success">
+                    Live now
+                  </p>
+                ) : null}
                 <p className="mt-2 text-sm text-muted">{entry.description}</p>
 
                 <div className="mt-4 grid gap-2 text-sm text-muted sm:grid-cols-2">
@@ -72,6 +86,14 @@ export default async function AdminClassesPage() {
                 >
                   Open Channel
                 </Link>
+                {entry.liveSessions.length > 0 ? (
+                  <Link
+                    href={`/admin/classes/${entry.id}/live`}
+                    className="ml-2 mt-4 inline-flex rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-strong"
+                  >
+                    Enter Live Room
+                  </Link>
+                ) : null}
               </article>
             ))
           ) : (

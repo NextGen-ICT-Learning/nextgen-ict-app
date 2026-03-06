@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { LiveClassStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { requireContentEditorSession } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
+import { buildWhiteboardUrl } from "@/lib/live-class";
 import { ClassChannelPostForm } from "@/components/class-channel-post-form";
 import { ClassChannelPostList } from "@/components/class-channel-post-list";
 import { AdminClassEditForm } from "@/components/admin-class-edit-form";
+import { AdminLiveClassControls } from "@/components/admin-live-class-controls";
 
 export default async function AdminClassChannelPage({
   params,
@@ -36,12 +39,35 @@ export default async function AdminClassChannelPage({
           createdAt: "desc",
         },
       },
+      liveSessions: {
+        where: {
+          status: LiveClassStatus.LIVE,
+        },
+        orderBy: {
+          startedAt: "desc",
+        },
+        take: 1,
+      },
     },
   });
 
   if (!classInfo) {
     notFound();
   }
+
+  const activeSession = classInfo.liveSessions[0]
+    ? {
+        id: classInfo.liveSessions[0].id,
+        title: classInfo.liveSessions[0].title,
+        meetingRoom: classInfo.liveSessions[0].meetingRoom,
+        status: classInfo.liveSessions[0].status,
+        startedAt: classInfo.liveSessions[0].startedAt,
+        whiteboardUrl: buildWhiteboardUrl(
+          classInfo.liveSessions[0].whiteboardRoom,
+          classInfo.liveSessions[0].whiteboardKey,
+        ),
+      }
+    : null;
 
   return (
     <div className="space-y-6">
@@ -65,6 +91,8 @@ export default async function AdminClassChannelPage({
         initialDescription={classInfo.description}
         initialClassCode={classInfo.classCode}
       />
+
+      <AdminLiveClassControls classId={classInfo.id} activeSession={activeSession} />
 
       <ClassChannelPostForm classId={classInfo.id} />
 

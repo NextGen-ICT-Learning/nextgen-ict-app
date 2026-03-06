@@ -1,3 +1,4 @@
+import { LiveClassStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
@@ -58,6 +59,15 @@ export async function GET() {
           select: {
             enrollments: true,
           },
+        },
+        liveSessions: {
+          where: {
+            status: LiveClassStatus.LIVE,
+          },
+          orderBy: {
+            startedAt: "desc",
+          },
+          take: 1,
         },
       },
       orderBy: { createdAt: "desc" },

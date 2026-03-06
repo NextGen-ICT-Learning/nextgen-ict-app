@@ -52,6 +52,12 @@ enum ClassPostMediaType {
   FILE
 }
 
+enum LiveClassStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+}
+
 model User {
   id                  String               @id @default(cuid())
   email               String               @unique
@@ -74,6 +80,7 @@ model User {
   classesCreated      ClassContent[]       @relation("ClassCreator")
   classEnrollments    ClassEnrollment[]
   classPosts          ClassPost[]          @relation("ClassPostAuthor")
+  liveSessionsCreated LiveClassSession[]   @relation("LiveSessionCreator")
 }
 
 model Invoice {
@@ -176,6 +183,7 @@ model ClassContent {
   createdBy           User              @relation("ClassCreator", fields: [createdById], references: [id], onDelete: Cascade)
   enrollments         ClassEnrollment[]
   posts               ClassPost[]
+  liveSessions        LiveClassSession[]
 
   @@index([classCode])
   @@index([createdAt])
@@ -209,4 +217,24 @@ model ClassPost {
 
   @@index([classId, createdAt])
   @@index([authorId, createdAt])
+}
+
+model LiveClassSession {
+  id             String          @id @default(cuid())
+  classId        String
+  title          String
+  meetingRoom    String          @unique
+  whiteboardRoom String
+  whiteboardKey  String
+  status         LiveClassStatus @default(SCHEDULED)
+  startedAt      DateTime?
+  endedAt        DateTime?
+  createdById    String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  class          ClassContent    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  createdBy      User            @relation("LiveSessionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([classId, status, createdAt])
+  @@index([createdById, createdAt])
 }

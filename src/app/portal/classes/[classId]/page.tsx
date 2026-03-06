@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ClassMediaType } from "@prisma/client";
+import { ClassMediaType, LiveClassStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { requireStudentSession } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
@@ -43,6 +43,15 @@ export default async function StudentClassChannelPage({
               createdAt: "desc",
             },
           },
+          liveSessions: {
+            where: {
+              status: LiveClassStatus.LIVE,
+            },
+            orderBy: {
+              startedAt: "desc",
+            },
+            take: 1,
+          },
         },
       },
     },
@@ -53,6 +62,7 @@ export default async function StudentClassChannelPage({
   }
 
   const classInfo = enrollment.class;
+  const activeSession = classInfo.liveSessions[0] ?? null;
 
   return (
     <div className="space-y-6">
@@ -101,6 +111,29 @@ export default async function StudentClassChannelPage({
               Open PDF Material
             </a>
           </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-line bg-surface p-5 md:p-6">
+        <h2 className="text-xl font-bold">Live Class</h2>
+        {activeSession ? (
+          <div className="mt-3 space-y-3 rounded-xl border border-success/40 bg-success/5 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-success">Live now</p>
+            <p className="text-lg font-bold">{activeSession.title}</p>
+            <p className="text-sm text-muted">
+              Started: {activeSession.startedAt ? new Date(activeSession.startedAt).toLocaleString() : "Just now"}
+            </p>
+            <Link
+              href={`/portal/classes/${classInfo.id}/live`}
+              className="inline-flex rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-strong"
+            >
+              Join Live Class
+            </Link>
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-muted">
+            No live class is active at the moment. You will see the join button here when mentor starts a session.
+          </p>
         )}
       </section>
 

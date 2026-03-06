@@ -7,6 +7,7 @@ Modern coaching center platform built with Next.js:
 - Content CMS (draft/publish with role-based access)
 - Class upload module with unique join code and student online class access
 - Class broadcast channel (teacher/admin posts updates, image/video/PDF)
+- Live class studio (video + screen share + collaborative whiteboard)
 
 ## Tech Stack
 
@@ -15,6 +16,8 @@ Modern coaching center platform built with Next.js:
 - Custom JWT session auth
 - Stripe Checkout + Webhooks
 - Cloudinary for class media hosting
+- Jitsi Meet External API for live video classes
+- Excalidraw embed for live whiteboard drawing
 
 ## Setup
 
@@ -42,6 +45,8 @@ CLOUDINARY_API_KEY="your-cloudinary-api-key"
 CLOUDINARY_API_SECRET="your-cloudinary-api-secret"
 CLASS_UPLOAD_MAX_MB="200"
 CLASS_POST_MAX_MB="200"
+NEXT_PUBLIC_JITSI_DOMAIN="meet.jit.si"
+NEXT_PUBLIC_WHITEBOARD_BASE_URL="https://excalidraw.com"
 ```
 
 3. Sync database and seed:
@@ -77,6 +82,8 @@ Open `http://localhost:3000`.
 - Content CMS: `/admin/content`
 - Admin class upload/manage: `/admin/classes`
 - Admin class channel page: `/admin/classes/:classId`
+- Admin live room: `/admin/classes/:classId/live`
+- Student live room: `/portal/classes/:classId/live`
 
 ## API Routes (Core)
 
@@ -107,6 +114,9 @@ Open `http://localhost:3000`.
   - `GET /api/admin/classes`
   - `POST /api/admin/classes` (multipart upload to Cloudinary)
   - `PATCH /api/admin/classes/:classId`
+  - `GET /api/admin/classes/:classId/live-session`
+  - `POST /api/admin/classes/:classId/live-session` (`start` / `end`)
+  - `GET /api/classes/:classId/live-session`
   - `GET /api/classes/:classId/posts`
   - `POST /api/classes/:classId/posts`
 

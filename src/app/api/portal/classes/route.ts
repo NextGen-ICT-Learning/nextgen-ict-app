@@ -1,3 +1,4 @@
+import { LiveClassStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -17,14 +18,23 @@ export async function GET() {
       include: {
         class: {
           include: {
-            createdBy: {
-              select: {
-                fullName: true,
-                email: true,
-              },
+          createdBy: {
+            select: {
+              fullName: true,
+              email: true,
             },
           },
+          liveSessions: {
+            where: {
+              status: LiveClassStatus.LIVE,
+            },
+            orderBy: {
+              startedAt: "desc",
+            },
+            take: 1,
+          },
         },
+      },
       },
       orderBy: {
         joinedAt: "desc",

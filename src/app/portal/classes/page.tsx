@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ClassMediaType } from "@prisma/client";
+import { ClassMediaType, LiveClassStatus } from "@prisma/client";
 import { requireStudentSession } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
 import { JoinClassCodeForm } from "@/components/join-class-code-form";
@@ -20,6 +20,15 @@ export default async function PortalClassesPage() {
               fullName: true,
               email: true,
             },
+          },
+          liveSessions: {
+            where: {
+              status: LiveClassStatus.LIVE,
+            },
+            orderBy: {
+              startedAt: "desc",
+            },
+            take: 1,
           },
         },
       },
@@ -46,6 +55,11 @@ export default async function PortalClassesPage() {
                     Class Code: {entry.class.classCode}
                   </p>
                   <h3 className="mt-2 text-xl font-bold">{entry.class.title}</h3>
+                  {entry.class.liveSessions.length > 0 ? (
+                    <p className="mt-2 inline-flex rounded-full bg-success/15 px-2 py-1 text-xs font-semibold text-success">
+                      Live now
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-sm text-muted">{entry.class.description}</p>
                 </div>
 
@@ -90,6 +104,14 @@ export default async function PortalClassesPage() {
                   >
                     Open Class Channel
                   </Link>
+                  {entry.class.liveSessions.length > 0 ? (
+                    <Link
+                      href={`/portal/classes/${entry.class.id}/live`}
+                      className="ml-2 mt-3 inline-flex rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-strong"
+                    >
+                      Join Live
+                    </Link>
+                  ) : null}
                 </div>
               </article>
             ))

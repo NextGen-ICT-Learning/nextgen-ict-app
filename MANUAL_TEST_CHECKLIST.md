@@ -116,3 +116,31 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 - Admin: `admin@nextgenict.local` / `Admin123!`
 - Content Editor: `editor@nextgenict.local` / `Editor123!`
 - Student: `student@nextgenict.local` / `Student123!`
+
+## 11) Live Class (Video + Screen Share + Whiteboard)
+
+1. Login as admin and open `/admin/classes`.
+2. Open any class channel via `Open Channel`.
+3. In `Live Class Studio`:
+   - optionally set session title
+   - click `Start Live Class`
+4. Confirm:
+   - status badge shows `Live now`
+   - `Open Live Room` button appears
+5. Click `Open Live Room` and verify:
+   - Jitsi video call loads
+   - mic/camera controls work
+6. Test screen sharing:
+   - click `Share screen` from Jitsi toolbar
+   - choose tab/window and confirm share starts
+7. Test whiteboard:
+   - use split view or whiteboard focus
+   - draw in embedded board
+8. Login as student in another browser/session and open `/portal/classes`.
+9. Confirm class card shows `Live now` and `Join Live`.
+10. Click `Join Live`, confirm student enters same meeting room and can see screen share.
+11. Verify student can open whiteboard tab and see drawing updates.
+12. End session from admin class channel using `End Live Session`.
+13. Confirm:
+   - student live page no longer allows joining
+   - channel timeline contains live started/ended system posts.
