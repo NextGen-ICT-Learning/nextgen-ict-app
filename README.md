@@ -9,7 +9,7 @@ Modern coaching center platform built with Next.js:
 ## Tech Stack
 
 - Next.js 16 (App Router)
-- Prisma + SQLite
+- Prisma + PostgreSQL (Neon)
 - Custom JWT session auth
 - Stripe Checkout + Webhooks
 
@@ -30,7 +30,7 @@ cp .env.example .env
 Required keys in `.env`:
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DBNAME?sslmode=require"
 AUTH_SECRET="replace-with-a-long-random-secret"
 STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_WEBHOOK_SECRET="whsec_..."
