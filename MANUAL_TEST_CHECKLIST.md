@@ -98,7 +98,20 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 6. Enter class code and click `Join Class`.
 7. Confirm joined class appears in list and media is viewable (video plays / image renders).
 
-## 9) Credentials
+## 9) Class Channel + Class Edit
+
+1. As admin, open `/admin/classes`.
+2. Click `Open Channel` for a class.
+3. Edit title/description/code and save; verify changes persist.
+4. Replace class media with a PDF and save.
+5. Publish a class channel post:
+   - text-only
+   - image/video/pdf attachment
+6. Login as student and open `/portal/classes/{classId}` from `Open Class Channel`.
+7. Confirm updated class info is visible.
+8. Confirm broadcast posts appear in timeline and attachments open correctly.
+
+## 10) Credentials
 
 - Admin: `admin@nextgenict.local` / `Admin123!`
 - Content Editor: `editor@nextgenict.local` / `Editor123!`

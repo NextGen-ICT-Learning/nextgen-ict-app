@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import {
+  ClassPostMediaType,
   PrismaClient,
   ClassMediaType,
   InvoiceStatus,
@@ -15,6 +16,7 @@ function monthDate(year, monthIndex, day = 28) {
 }
 
 async function main() {
+  await prisma.classPost.deleteMany();
   await prisma.classEnrollment.deleteMany();
   await prisma.classContent.deleteMany();
   await prisma.payment.deleteMany();
@@ -125,6 +127,16 @@ async function main() {
     data: {
       classId: sampleClass.id,
       studentId: student.id,
+    },
+  });
+
+  await prisma.classPost.create({
+    data: {
+      classId: sampleClass.id,
+      authorId: admin.id,
+      message:
+        "Welcome to the class channel. Here we will post class updates, resources, and assignment instructions.",
+      mediaType: ClassPostMediaType.TEXT,
     },
   });
 

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ClassMediaType } from "@prisma/client";
 import { requireStudentSession } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
@@ -58,7 +59,7 @@ export default async function PortalClassesPage() {
                     >
                       Your browser does not support video playback.
                     </video>
-                  ) : (
+                  ) : entry.class.mediaType === ClassMediaType.IMAGE ? (
                     <Image
                       src={entry.class.mediaUrl}
                       alt={entry.class.title}
@@ -66,12 +67,29 @@ export default async function PortalClassesPage() {
                       height={720}
                       className="h-[260px] w-full object-contain"
                     />
+                  ) : (
+                    <div className="flex h-[260px] items-center justify-center bg-surface px-4 text-center">
+                      <a
+                        href={entry.class.mediaUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex rounded-lg border border-line px-3 py-2 text-sm font-semibold text-foreground hover:border-primary"
+                      >
+                        Open PDF Document
+                      </a>
+                    </div>
                   )}
                 </div>
 
                 <div className="p-4 text-sm text-muted">
                   <p>Mentor/Admin: {entry.class.createdBy.fullName}</p>
                   <p>Joined: {new Date(entry.joinedAt).toLocaleString()}</p>
+                  <Link
+                    href={`/portal/classes/${entry.class.id}`}
+                    className="mt-3 inline-flex rounded-lg border border-line px-3 py-2 text-sm font-semibold text-foreground hover:border-primary"
+                  >
+                    Open Class Channel
+                  </Link>
                 </div>
               </article>
             ))

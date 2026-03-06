@@ -1,9 +1,11 @@
 import { ClassMediaType } from "@prisma/client";
+import Link from "next/link";
 import { requireAdminSession } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
 import { AdminClassUploadForm } from "@/components/admin-class-upload-form";
 
 function mediaLabel(mediaType: ClassMediaType) {
+  if (mediaType === ClassMediaType.PDF) return "PDF";
   return mediaType === ClassMediaType.VIDEO ? "Video" : "Image";
 }
 
@@ -64,6 +66,12 @@ export default async function AdminClassesPage() {
                 >
                   Open Uploaded Media
                 </a>
+                <Link
+                  href={`/admin/classes/${entry.id}`}
+                  className="ml-2 mt-4 inline-flex rounded-lg border border-line px-3 py-2 text-sm font-semibold hover:border-primary"
+                >
+                  Open Channel
+                </Link>
               </article>
             ))
           ) : (

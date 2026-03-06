@@ -41,6 +41,15 @@ enum ContentStatus {
 enum ClassMediaType {
   IMAGE
   VIDEO
+  PDF
+}
+
+enum ClassPostMediaType {
+  TEXT
+  IMAGE
+  VIDEO
+  PDF
+  FILE
 }
 
 model User {
@@ -64,6 +73,7 @@ model User {
   loginActivities     LoginActivity[]
   classesCreated      ClassContent[]       @relation("ClassCreator")
   classEnrollments    ClassEnrollment[]
+  classPosts          ClassPost[]          @relation("ClassPostAuthor")
 }
 
 model Invoice {
@@ -165,6 +175,7 @@ model ClassContent {
   updatedAt           DateTime          @updatedAt
   createdBy           User              @relation("ClassCreator", fields: [createdById], references: [id], onDelete: Cascade)
   enrollments         ClassEnrollment[]
+  posts               ClassPost[]
 
   @@index([classCode])
   @@index([createdAt])
@@ -181,4 +192,21 @@ model ClassEnrollment {
   @@unique([classId, studentId])
   @@index([studentId, joinedAt])
   @@index([classId, joinedAt])
+}
+
+model ClassPost {
+  id                String             @id @default(cuid())
+  classId           String
+  authorId          String
+  message           String?
+  mediaType         ClassPostMediaType @default(TEXT)
+  mediaUrl          String?
+  mediaPublicId     String?
+  mediaOriginalName String?
+  createdAt         DateTime           @default(now())
+  class             ClassContent       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  author            User               @relation("ClassPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([classId, createdAt])
+  @@index([authorId, createdAt])
 }

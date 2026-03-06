@@ -271,17 +271,48 @@ export default function Home() {
               <p className="text-xs font-semibold text-muted">{content.metricsNote}</p>
             </div>
 
-            <div className="relative rounded-3xl border border-line bg-[#f4f9ff] p-6 md:p-8">
-              <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#d6ecff]" />
-              <div className="absolute -bottom-12 -left-10 h-32 w-32 rounded-full bg-[#ffe7df]" />
+            <div className="relative overflow-hidden rounded-3xl border border-line bg-[#f4f9ff] p-6 md:p-8">
+              <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-[#dff1ff] via-transparent to-[#ffe9e1]" />
+              <div className="absolute -right-8 top-20 h-24 w-24 rounded-full bg-[#d6ecff]/70" />
+              <div className="absolute -left-8 bottom-12 h-24 w-24 rounded-full bg-[#ffe7df]/70" />
 
               <div className="relative z-10 space-y-4">
-                <div className="rounded-2xl border border-line bg-surface p-4">
+                <div className="rounded-2xl border border-line bg-surface p-4 shadow-[var(--shadow-soft)]">
                   <p className="text-sm font-semibold text-muted">{content.hero.liveClassLabel}</p>
                   <p className="mt-2 text-lg font-bold">{content.hero.liveClassTitle}</p>
                   <p className="mt-1 inline-flex items-center gap-2 text-sm text-primary">
                     <CalendarCheck size={15} /> {content.hero.liveClassTime}
                   </p>
+
+                  <div className="mt-4 grid grid-cols-3 gap-3">
+                    <div className="overflow-hidden rounded-xl border border-line bg-[#f0f7ff]">
+                      <Image
+                        src="/images/canva-mentor-a.png"
+                        alt="Instructor portrait from Canva hero set"
+                        width={394}
+                        height={506}
+                        className="h-24 w-full object-cover object-top"
+                      />
+                    </div>
+                    <div className="overflow-hidden rounded-xl border border-line bg-[#f0f7ff]">
+                      <Image
+                        src="/images/canva-mentor-b.png"
+                        alt="Student portrait from Canva hero set"
+                        width={447}
+                        height={447}
+                        className="h-24 w-full object-cover object-top"
+                      />
+                    </div>
+                    <div className="overflow-hidden rounded-xl border border-line bg-[#f0f7ff]">
+                      <Image
+                        src="/images/canva-mentor-c.png"
+                        alt="Mentor portrait from Canva hero set"
+                        width={404}
+                        height={493}
+                        className="h-24 w-full object-cover object-top"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -299,7 +330,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-line bg-primary p-5 text-white">
+                <div className="rounded-2xl border border-primary/20 bg-primary p-5 text-white shadow-[var(--shadow-soft)]">
                   <p className="text-sm text-white/80">{content.hero.improvementLabel}</p>
                   <p className="mt-1 font-display text-3xl font-bold">{content.hero.improvementValue}</p>
                   <p className="mt-2 text-sm text-white/80">

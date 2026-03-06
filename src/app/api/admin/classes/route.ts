@@ -12,10 +12,13 @@ const classMetaSchema = z.object({
   description: z.string().min(12).max(2000),
 });
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const DEFAULT_MAX_UPLOAD_MB = 200;
+const parsedMaxMb = Number(process.env.CLASS_UPLOAD_MAX_MB ?? DEFAULT_MAX_UPLOAD_MB);
+const MAX_UPLOAD_MB = Number.isFinite(parsedMaxMb) && parsedMaxMb > 0 ? parsedMaxMb : DEFAULT_MAX_UPLOAD_MB;
+const MAX_FILE_SIZE = Math.floor(MAX_UPLOAD_MB * 1024 * 1024);
 
 function isAllowedMediaType(type: string) {
-  return type.startsWith("image/") || type.startsWith("video/");
+  return type.startsWith("image/") || type.startsWith("video/") || type === "application/pdf";
 }
 
 async function generateUniqueClassCode() {
@@ -94,11 +97,11 @@ export async function POST(request: Request) {
     }
 
     if (media.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ message: "File must be under 50MB" }, { status: 400 });
+      return NextResponse.json({ message: `File must be under ${MAX_UPLOAD_MB}MB` }, { status: 400 });
     }
 
     if (!isAllowedMediaType(media.type)) {
-      return NextResponse.json({ message: "Only image or video files are allowed" }, { status: 400 });
+      return NextResponse.json({ message: "Only image, video, or PDF files are allowed" }, { status: 400 });
     }
 
     const [asset, classCode] = await Promise.all([uploadClassAsset(media), generateUniqueClassCode()]);

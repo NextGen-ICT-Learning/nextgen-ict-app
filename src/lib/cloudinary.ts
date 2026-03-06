@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiResponse, UploadApiErrorResponse } from "cloudinary";
-import { ClassMediaType } from "@prisma/client";
+import { ClassMediaType, ClassPostMediaType } from "@prisma/client";
 
 function requireEnv(name: string) {
   const value = process.env[name];
@@ -34,23 +34,51 @@ export type UploadedClassAsset = {
   originalName?: string;
 };
 
-function mediaTypeFromResourceType(resourceType?: string): ClassMediaType {
-  if (resourceType === "video") {
+export type UploadedPostAsset = {
+  mediaType: ClassPostMediaType;
+  secureUrl: string;
+  publicId: string;
+  originalName?: string;
+};
+
+function classMediaTypeFromFile(file: File): ClassMediaType {
+  if (file.type.startsWith("video/")) {
     return ClassMediaType.VIDEO;
+  }
+  if (file.type === "application/pdf") {
+    return ClassMediaType.PDF;
   }
   return ClassMediaType.IMAGE;
 }
 
-export async function uploadClassAsset(file: File): Promise<UploadedClassAsset> {
+function postMediaTypeFromFile(file: File): ClassPostMediaType {
+  if (file.type.startsWith("image/")) {
+    return ClassPostMediaType.IMAGE;
+  }
+  if (file.type.startsWith("video/")) {
+    return ClassPostMediaType.VIDEO;
+  }
+  if (file.type === "application/pdf") {
+    return ClassPostMediaType.PDF;
+  }
+  return ClassPostMediaType.FILE;
+}
+
+async function uploadToCloudinary(file: File, folder: string) {
   ensureCloudinaryConfig();
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  return new Promise((resolve, reject) => {
+  return new Promise<{
+    resourceType: string;
+    secureUrl: string;
+    publicId: string;
+    originalName?: string;
+  }>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: "nextgenict/classes",
+        folder,
         resource_type: "auto",
         use_filename: true,
         unique_filename: true,
@@ -62,7 +90,7 @@ export async function uploadClassAsset(file: File): Promise<UploadedClassAsset> 
         }
 
         resolve({
-          mediaType: mediaTypeFromResourceType(result.resource_type),
+          resourceType: result.resource_type,
           secureUrl: result.secure_url,
           publicId: result.public_id,
           originalName: result.original_filename,
@@ -72,4 +100,26 @@ export async function uploadClassAsset(file: File): Promise<UploadedClassAsset> 
 
     stream.end(buffer);
   });
+}
+
+export async function uploadClassAsset(file: File): Promise<UploadedClassAsset> {
+  const uploaded = await uploadToCloudinary(file, "nextgenict/classes");
+
+  return {
+    mediaType: classMediaTypeFromFile(file),
+    secureUrl: uploaded.secureUrl,
+    publicId: uploaded.publicId,
+    originalName: uploaded.originalName,
+  };
+}
+
+export async function uploadClassPostAsset(file: File): Promise<UploadedPostAsset> {
+  const uploaded = await uploadToCloudinary(file, "nextgenict/class-posts");
+
+  return {
+    mediaType: postMediaTypeFromFile(file),
+    secureUrl: uploaded.secureUrl,
+    publicId: uploaded.publicId,
+    originalName: uploaded.originalName,
+  };
 }

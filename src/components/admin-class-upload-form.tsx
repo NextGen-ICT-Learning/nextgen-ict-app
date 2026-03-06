@@ -77,14 +77,14 @@ export function AdminClassUploadForm() {
 
         <div className="space-y-1">
           <label htmlFor="media" className="text-sm font-semibold">
-            Upload media (image/video)
+            Upload media (image/video/pdf, default limit 200MB)
           </label>
           <input
             id="media"
             name="media"
             type="file"
             required
-            accept="image/*,video/*"
+            accept="image/*,video/*,.pdf,application/pdf"
             className="w-full rounded-xl border border-line bg-surface px-3 py-2 text-sm"
           />
         </div>
