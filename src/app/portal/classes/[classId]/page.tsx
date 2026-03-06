@@ -63,6 +63,28 @@ export default async function StudentClassChannelPage({
 
   const classInfo = enrollment.class;
   const activeSession = classInfo.liveSessions[0] ?? null;
+  const attendanceRows = await db.liveClassAttendance.findMany({
+    where: {
+      studentId: session.sub,
+      session: {
+        classId: classInfo.id,
+      },
+    },
+    include: {
+      session: {
+        select: {
+          title: true,
+          startedAt: true,
+        },
+      },
+    },
+    orderBy: {
+      firstJoinedAt: "desc",
+    },
+    take: 8,
+  });
+  const totalActiveSeconds = attendanceRows.reduce((sum, row) => sum + row.totalActiveSeconds, 0);
+  const attendedSessions = attendanceRows.filter((row) => row.totalActiveSeconds >= 60).length;
 
   return (
     <div className="space-y-6">
@@ -134,6 +156,58 @@ export default async function StudentClassChannelPage({
           <p className="mt-2 text-sm text-muted">
             No live class is active at the moment. You will see the join button here when mentor starts a session.
           </p>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-line bg-surface p-5 md:p-6">
+        <h2 className="text-xl font-bold">Attendance Summary</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <article className="rounded-xl border border-line bg-surface-muted p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Sessions attended</p>
+            <p className="mt-2 text-2xl font-bold">{attendedSessions}</p>
+          </article>
+          <article className="rounded-xl border border-line bg-surface-muted p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Total live minutes</p>
+            <p className="mt-2 text-2xl font-bold">{Math.round(totalActiveSeconds / 60)}</p>
+          </article>
+          <article className="rounded-xl border border-line bg-surface-muted p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Avg minutes/session</p>
+            <p className="mt-2 text-2xl font-bold">
+              {attendedSessions > 0 ? Math.round(totalActiveSeconds / 60 / attendedSessions) : 0}
+            </p>
+          </article>
+        </div>
+
+        {attendanceRows.length > 0 ? (
+          <div className="mt-4 overflow-x-auto rounded-xl border border-line">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-surface-muted text-xs uppercase tracking-[0.08em] text-muted">
+                <tr>
+                  <th className="px-4 py-3">Session</th>
+                  <th className="px-4 py-3">Join</th>
+                  <th className="px-4 py-3">Leave</th>
+                  <th className="px-4 py-3">Minutes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attendanceRows.map((row) => (
+                  <tr key={row.id} className="border-t border-line">
+                    <td className="px-4 py-3">
+                      <p className="font-semibold">{row.session.title}</p>
+                      <p className="text-xs text-muted">
+                        {row.session.startedAt ? new Date(row.session.startedAt).toLocaleString() : "N/A"}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">{new Date(row.firstJoinedAt).toLocaleString()}</td>
+                    <td className="px-4 py-3">{row.leftAt ? new Date(row.leftAt).toLocaleString() : "Live"}</td>
+                    <td className="px-4 py-3 font-semibold">{Math.round(row.totalActiveSeconds / 60)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted">No attendance data yet. Join a live class to begin tracking.</p>
         )}
       </section>
 

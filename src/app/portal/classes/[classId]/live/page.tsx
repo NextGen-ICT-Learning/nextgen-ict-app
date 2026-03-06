@@ -5,6 +5,7 @@ import { requireStudentSession } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
 import { buildWhiteboardUrl, getJitsiDomain } from "@/lib/live-class";
 import { LiveClassRoom } from "@/components/live-class-room";
+import { LiveAttendanceTracker } from "@/components/live-attendance-tracker";
 
 export default async function StudentLiveClassPage({
   params,
@@ -78,6 +79,10 @@ export default async function StudentLiveClassPage({
         email={session.email}
         jitsiDomain={getJitsiDomain()}
       />
+
+      <section className="rounded-2xl border border-line bg-surface p-4">
+        <LiveAttendanceTracker classId={classId} sessionId={activeSession.id} />
+      </section>
     </div>
   );
 }

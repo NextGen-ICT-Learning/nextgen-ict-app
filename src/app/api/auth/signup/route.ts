@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { buildStarterInvoices } from "@/lib/invoice";
 import { setSessionCookie } from "@/lib/auth";
+import { generateUniqueParentAccessCode } from "@/lib/parent-access";
 
 const signupSchema = z.object({
   fullName: z.string().min(2).max(80),
@@ -28,13 +29,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Email already in use" }, { status: 409 });
     }
 
-    const passwordHash = await bcrypt.hash(parsed.data.password, 10);
+    const [passwordHash, parentAccessCode] = await Promise.all([
+      bcrypt.hash(parsed.data.password, 10),
+      generateUniqueParentAccessCode(),
+    ]);
 
     const user = await db.user.create({
       data: {
         fullName: parsed.data.fullName.trim(),
         email,
         passwordHash,
+        parentAccessCode,
         role: Role.STUDENT,
       },
     });

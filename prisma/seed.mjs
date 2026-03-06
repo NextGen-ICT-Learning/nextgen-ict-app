@@ -16,6 +16,8 @@ function monthDate(year, monthIndex, day = 28) {
 }
 
 async function main() {
+  await prisma.liveClassAttendance.deleteMany();
+  await prisma.liveClassSession.deleteMany();
   await prisma.classPost.deleteMany();
   await prisma.classEnrollment.deleteMany();
   await prisma.classContent.deleteMany();
@@ -51,6 +53,7 @@ async function main() {
       email: "student@nextgenict.local",
       fullName: "Jannatul Ferdous",
       passwordHash: studentPasswordHash,
+      parentAccessCode: "NGPDEMO2026A1",
       role: Role.STUDENT,
     },
   });
@@ -158,6 +161,7 @@ async function main() {
   console.log(`Admin login: ${admin.email} / Admin123!`);
   console.log(`Editor login: ${editor.email} / Editor123!`);
   console.log(`Student login: ${student.email} / Student123!`);
+  console.log(`Parent tracking code: ${student.parentAccessCode}`);
   console.log(`Sample class code: ${sampleClass.classCode}`);
 }
 

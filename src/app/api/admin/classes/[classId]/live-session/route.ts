@@ -29,6 +29,11 @@ function canManageLiveClass(role: string) {
   return role === "ADMIN" || role === "CONTENT_EDITOR";
 }
 
+function clampSeconds(seconds: number, max = 300) {
+  if (!Number.isFinite(seconds) || seconds < 0) return 0;
+  return Math.min(Math.floor(seconds), max);
+}
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ classId: string }> },
@@ -191,11 +196,48 @@ export async function POST(
       return NextResponse.json({ message: "No active live class found" }, { status: 404 });
     }
 
+    const endedAt = new Date();
+
+    const openAttendances = await db.liveClassAttendance.findMany({
+      where: {
+        sessionId: liveToEnd.id,
+        leftAt: null,
+      },
+      select: {
+        sessionId: true,
+        studentId: true,
+        lastSeenAt: true,
+        totalActiveSeconds: true,
+      },
+    });
+
+    if (openAttendances.length > 0) {
+      await db.$transaction(
+        openAttendances.map((entry) =>
+          db.liveClassAttendance.update({
+            where: {
+              sessionId_studentId: {
+                sessionId: entry.sessionId,
+                studentId: entry.studentId,
+              },
+            },
+            data: {
+              totalActiveSeconds:
+                entry.totalActiveSeconds +
+                clampSeconds((endedAt.getTime() - entry.lastSeenAt.getTime()) / 1000),
+              lastSeenAt: endedAt,
+              leftAt: endedAt,
+            },
+          }),
+        ),
+      );
+    }
+
     const ended = await db.liveClassSession.update({
       where: { id: liveToEnd.id },
       data: {
         status: LiveClassStatus.ENDED,
-        endedAt: new Date(),
+        endedAt,
       },
       include: {
         createdBy: {

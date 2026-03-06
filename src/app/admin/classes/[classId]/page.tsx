@@ -69,6 +69,29 @@ export default async function AdminClassChannelPage({
       }
     : null;
 
+  const attendanceSessions = await db.liveClassSession.findMany({
+    where: { classId },
+    include: {
+      attendances: {
+        include: {
+          student: {
+            select: {
+              fullName: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: {
+          firstJoinedAt: "desc",
+        },
+      },
+    },
+    orderBy: {
+      startedAt: "desc",
+    },
+    take: 8,
+  });
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-line bg-surface p-5 md:p-6">
@@ -95,6 +118,73 @@ export default async function AdminClassChannelPage({
       <AdminLiveClassControls classId={classInfo.id} activeSession={activeSession} />
 
       <ClassChannelPostForm classId={classInfo.id} />
+
+      <section className="rounded-2xl border border-line bg-surface p-5 md:p-6">
+        <h2 className="text-2xl font-bold">Live Attendance History</h2>
+        <p className="mt-1 text-sm text-muted">Track who attended each session and for how long.</p>
+
+        <div className="mt-4 space-y-4">
+          {attendanceSessions.length > 0 ? (
+            attendanceSessions.map((entry) => {
+              const attendeeCount = entry.attendances.filter((row) => row.totalActiveSeconds >= 60).length;
+              const totalMinutes = Math.round(
+                entry.attendances.reduce((sum, row) => sum + row.totalActiveSeconds, 0) / 60,
+              );
+
+              return (
+                <article key={entry.id} className="rounded-xl border border-line bg-surface-muted p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-lg font-bold">{entry.title}</p>
+                      <p className="text-xs text-muted">
+                        Started: {entry.startedAt ? new Date(entry.startedAt).toLocaleString() : "Not started"}
+                      </p>
+                    </div>
+                    <div className="text-sm text-muted">
+                      <p>Attendees: {attendeeCount}</p>
+                      <p>Total minutes: {totalMinutes}</p>
+                    </div>
+                  </div>
+
+                  {entry.attendances.length > 0 ? (
+                    <div className="mt-3 overflow-x-auto rounded-lg border border-line bg-surface">
+                      <table className="min-w-full text-left text-xs">
+                        <thead className="bg-surface-muted uppercase tracking-[0.08em] text-muted">
+                          <tr>
+                            <th className="px-3 py-2">Student</th>
+                            <th className="px-3 py-2">Join</th>
+                            <th className="px-3 py-2">Leave</th>
+                            <th className="px-3 py-2">Minutes</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {entry.attendances.map((row) => (
+                            <tr key={row.id} className="border-t border-line">
+                              <td className="px-3 py-2">
+                                <p className="font-semibold text-foreground">{row.student.fullName}</p>
+                                <p className="text-muted">{row.student.email}</p>
+                              </td>
+                              <td className="px-3 py-2">{new Date(row.firstJoinedAt).toLocaleString()}</td>
+                              <td className="px-3 py-2">
+                                {row.leftAt ? new Date(row.leftAt).toLocaleString() : "Live"}
+                              </td>
+                              <td className="px-3 py-2 font-semibold">{Math.round(row.totalActiveSeconds / 60)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted">No attendance records for this session.</p>
+                  )}
+                </article>
+              );
+            })
+          ) : (
+            <p className="text-sm text-muted">No live sessions have been started for this class yet.</p>
+          )}
+        </div>
+      </section>
 
       <section className="space-y-4">
         <h2 className="text-2xl font-bold">Channel Timeline</h2>

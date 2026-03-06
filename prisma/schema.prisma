@@ -65,6 +65,7 @@ model User {
   phone               String?
   guardianName        String?
   guardianPhone       String?
+  parentAccessCode    String?              @unique
   program             String?
   batch               String?
   passwordHash        String
@@ -81,6 +82,7 @@ model User {
   classEnrollments    ClassEnrollment[]
   classPosts          ClassPost[]          @relation("ClassPostAuthor")
   liveSessionsCreated LiveClassSession[]   @relation("LiveSessionCreator")
+  liveAttendances     LiveClassAttendance[]
 }
 
 model Invoice {
@@ -234,7 +236,24 @@ model LiveClassSession {
   updatedAt      DateTime        @updatedAt
   class          ClassContent    @relation(fields: [classId], references: [id], onDelete: Cascade)
   createdBy      User            @relation("LiveSessionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  attendances    LiveClassAttendance[]
 
   @@index([classId, status, createdAt])
   @@index([createdById, createdAt])
+}
+
+model LiveClassAttendance {
+  id                 String           @id @default(cuid())
+  sessionId          String
+  studentId          String
+  firstJoinedAt      DateTime         @default(now())
+  lastSeenAt         DateTime         @default(now())
+  leftAt             DateTime?
+  totalActiveSeconds Int              @default(0)
+  session            LiveClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student            User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, studentId])
+  @@index([studentId, firstJoinedAt])
+  @@index([sessionId, firstJoinedAt])
 }

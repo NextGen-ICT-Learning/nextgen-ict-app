@@ -8,6 +8,7 @@ Modern coaching center platform built with Next.js:
 - Class upload module with unique join code and student online class access
 - Class broadcast channel (teacher/admin posts updates, image/video/PDF)
 - Live class studio (video + screen share + collaborative whiteboard)
+- Live attendance tracking with parent attendance dashboard
 
 ## Tech Stack
 
@@ -77,6 +78,7 @@ Open `http://localhost:3000`.
 - Student dashboard: `/portal`
 - Student profile: `/portal/profile`
 - Student classes: `/portal/classes`
+- Parent attendance dashboard: `/parent/attendance?code=...`
 - Forgot/reset password: `/portal/forgot-password`, `/portal/reset-password`
 - Admin login/dashboard: `/admin/login`, `/admin`
 - Content CMS: `/admin/content`
@@ -96,6 +98,8 @@ Open `http://localhost:3000`.
 - Student
   - `GET /api/profile`
   - `PUT /api/profile`
+  - `GET /api/profile/parent-access`
+  - `POST /api/profile/parent-access`
   - `GET /api/portal/ledger`
   - `GET /api/portal/classes`
   - `POST /api/portal/classes/join`
@@ -117,6 +121,7 @@ Open `http://localhost:3000`.
   - `GET /api/admin/classes/:classId/live-session`
   - `POST /api/admin/classes/:classId/live-session` (`start` / `end`)
   - `GET /api/classes/:classId/live-session`
+  - `POST /api/classes/:classId/live-attendance` (`join` / `heartbeat` / `leave`)
   - `GET /api/classes/:classId/posts`
   - `POST /api/classes/:classId/posts`
 

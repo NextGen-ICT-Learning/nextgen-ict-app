@@ -20,6 +20,9 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileUser | null>(null);
+  const [parentAccessCode, setParentAccessCode] = useState<string>("");
+  const [parentAccessUrl, setParentAccessUrl] = useState<string>("");
+  const [isUpdatingParentLink, setIsUpdatingParentLink] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -27,16 +30,28 @@ export default function ProfilePage() {
     async function loadProfile() {
       try {
         setIsLoading(true);
-        const response = await fetch("/api/profile");
-        const payload = (await response.json()) as { user?: ProfileUser; message?: string };
+        const [profileResponse, parentAccessResponse] = await Promise.all([
+          fetch("/api/profile"),
+          fetch("/api/profile/parent-access"),
+        ]);
+        const profilePayload = (await profileResponse.json()) as {
+          user?: ProfileUser;
+          message?: string;
+        };
+        const parentPayload = (await parentAccessResponse.json()) as {
+          code?: string;
+          parentAccessUrl?: string;
+        };
 
-        if (!response.ok || !payload.user) {
-          setError(payload.message ?? "Failed to load profile");
+        if (!profileResponse.ok || !profilePayload.user) {
+          setError(profilePayload.message ?? "Failed to load profile");
           return;
         }
 
         if (!cancelled) {
-          setProfile(payload.user);
+          setProfile(profilePayload.user);
+          setParentAccessCode(parentPayload.code ?? "");
+          setParentAccessUrl(parentPayload.parentAccessUrl ?? "");
         }
       } catch {
         if (!cancelled) {
@@ -92,6 +107,50 @@ export default function ProfilePage() {
       setError("Network error while saving profile");
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleRegenerateParentAccess() {
+    try {
+      setIsUpdatingParentLink(true);
+      setError(null);
+      setMessage(null);
+
+      const response = await fetch("/api/profile/parent-access", {
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        code?: string;
+        parentAccessUrl?: string;
+        message?: string;
+      };
+
+      if (!response.ok || !payload.code || !payload.parentAccessUrl) {
+        setError(payload.message ?? "Failed to regenerate parent access link");
+        return;
+      }
+
+      setParentAccessCode(payload.code);
+      setParentAccessUrl(payload.parentAccessUrl);
+      setMessage(payload.message ?? "Parent access link regenerated");
+    } catch {
+      setError("Network error while regenerating parent access");
+    } finally {
+      setIsUpdatingParentLink(false);
+    }
+  }
+
+  async function handleCopyParentLink() {
+    if (!parentAccessUrl) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(parentAccessUrl);
+      setMessage("Parent attendance link copied");
+      setError(null);
+    } catch {
+      setError("Could not copy parent link. Please copy manually.");
     }
   }
 
@@ -197,6 +256,49 @@ export default function ProfilePage() {
             defaultValue={profile.batch ?? ""}
             className="h-12 w-full rounded-xl border border-line bg-white px-4 outline-none focus:border-primary"
           />
+        </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <label htmlFor="parentAccessCode" className="text-sm font-semibold">
+            Parent attendance access code
+          </label>
+          <input
+            id="parentAccessCode"
+            value={parentAccessCode}
+            readOnly
+            className="h-12 w-full rounded-xl border border-line bg-surface-muted px-4"
+          />
+          <p className="text-xs text-muted">Share the link below with guardian to track live class attendance.</p>
+        </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <label htmlFor="parentAccessUrl" className="text-sm font-semibold">
+            Parent attendance link
+          </label>
+          <input
+            id="parentAccessUrl"
+            value={parentAccessUrl}
+            readOnly
+            className="h-12 w-full rounded-xl border border-line bg-surface-muted px-4"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-3 md:col-span-2">
+          <button
+            type="button"
+            onClick={handleCopyParentLink}
+            className="rounded-xl border border-line px-4 py-2 text-sm font-semibold hover:border-primary"
+          >
+            Copy Parent Link
+          </button>
+          <button
+            type="button"
+            onClick={handleRegenerateParentAccess}
+            disabled={isUpdatingParentLink}
+            className="rounded-xl border border-line px-4 py-2 text-sm font-semibold hover:border-primary disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isUpdatingParentLink ? "Regenerating..." : "Regenerate Parent Link"}
+          </button>
         </div>
 
         {message ? <p className="text-sm text-success md:col-span-2">{message}</p> : null}

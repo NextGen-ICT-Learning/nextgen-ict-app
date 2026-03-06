@@ -144,3 +144,17 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 13. Confirm:
    - student live page no longer allows joining
    - channel timeline contains live started/ended system posts.
+
+## 12) Attendance Tracking + Parent View
+
+1. Login as student and open `/portal/profile`.
+2. In parent section, copy `Parent attendance link`.
+3. Open that link in a new browser where no user is logged in.
+4. Confirm parent page opens and shows student attendance dashboard.
+5. Start a live class as admin from `/admin/classes/{classId}`.
+6. Join the live class as student from `/portal/classes/{classId}/live`.
+7. Stay for at least 2 minutes, then leave the page.
+8. Refresh student class page and confirm `Attendance Summary` metrics update.
+9. Refresh parent attendance page and confirm new session appears with minutes.
+10. In admin class channel, verify `Live Attendance History` lists student attendance rows.
+11. Regenerate parent link from student profile and confirm old link no longer works.
